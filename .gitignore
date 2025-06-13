@@ -63,3 +63,6 @@ cvat-ui/dist
 
 # produced by cvat/apps/iam/rules/tests/generate_tests.py
 /cvat/apps/*/rules/*_test.gen.rego
+
+
+nuctl-1.13.0-linux-amd64

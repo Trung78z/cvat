@@ -1,0 +1,74 @@
+metadata:
+  name: onnx-traffic-sign
+  namespace: cvat
+  annotations:
+    name: Traffic sign
+    type: detector
+    spec: |
+      [
+          { "id": 0, "name": "person", "type": "rectangle" },
+          { "id": 1, "name": "bicycle", "type": "rectangle" },
+          { "id": 2, "name": "car", "type": "rectangle" },
+          { "id": 3, "name": "motorcycle", "type": "rectangle" },
+          { "id": 4, "name": "bus", "type": "rectangle" },
+          { "id": 5, "name": "truck", "type": "rectangle" },
+          { "id": 6, "name": "other-vehicle", "type": "rectangle" },
+          { "id": 7, "name": "traffic light", "type": "rectangle" },
+          { "id": 8, "name": "stop sign", "type": "rectangle" },
+          { "id": 9, "name": "Speed limit", "type": "rectangle" },
+          { "id": 10, "name": "Speed limit 20km-h", "type": "rectangle" },
+          { "id": 11, "name": "Speed limit 30km-h", "type": "rectangle" },
+          { "id": 12, "name": "speed limit 40km-h", "type": "rectangle" },
+          { "id": 13, "name": "Speed limit 50km-h", "type": "rectangle" },
+          { "id": 14, "name": "Speed limit 60km-h", "type": "rectangle" },
+          { "id": 15, "name": "Speed limit 70km-h", "type": "rectangle" },
+          { "id": 16, "name": "Speed limit 80km-h", "type": "rectangle" },
+          { "id": 17, "name": "Speed limit 100km-h", "type": "rectangle" },
+          { "id": 18, "name": "Speed limit 120km-h", "type": "rectangle" },
+          { "id": 19, "name": "End of speed limit 80km-h", "type": "rectangle" }
+      ]
+
+spec:
+  description: Traffic sign via onnx-runtime
+  runtime: "python:3.9"
+  handler: main:handler
+  eventTimeout: 30s
+  build:
+    image: onnx-traffic-sign:latest-gpu
+    baseImage: nvidia/cuda:12.6.3-cudnn-runtime-ubuntu22.04
+
+    directives:
+      preCopy:
+        - kind: USER
+          value: root
+        - kind: RUN
+          value: apt update && apt install --no-install-recommends -y wget python3-pip
+        - kind: WORKDIR
+          value: /opt/nuclio
+        - kind: RUN
+          value: pip install onnxruntime-gpu opencv-python-headless pillow pyyaml
+        - kind: WORKDIR
+          value: /opt/nuclio
+        - kind: RUN
+          value: wget https://raw.githubusercontent.com/Trung78z/Thesis_University/main/services/models/yolo11m.onnx
+        - kind: RUN
+          value: ln -s /usr/bin/python3 /usr/bin/python
+
+  triggers:
+    myHttpTrigger:
+      numWorkers: 1
+      kind: "http"
+      workerAvailabilityTimeoutMilliseconds: 10000
+      attributes:
+        maxRequestBodySize: 33554432 # 32MB
+
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+
+  platform:
+    attributes:
+      restartPolicy:
+        name: always
+        maximumRetryCount: 3
+      mountMode: volume
