@@ -10,7 +10,7 @@ import onnxruntime as ort
 class ModelHandler:
     def __init__(self, labels):
         self.model = None
-        self.load_network(model="traffic-sign-m.onnx")
+        self.load_network(model="traffic-sign.onnx")
         self.labels = labels
 
     def load_network(self, model):
@@ -127,18 +127,15 @@ class ModelHandler:
         except Exception as e:
             print(e)
 
-    def infer(self, image, threshold):
+    def infer(self, image, threshold, attributes=None):
         image = np.array(image)
         image = image[:, :, ::-1].copy()
         h, w, _ = image.shape
         detections = self._infer(image)
-
         results = []
-        if detections:
-            boxes = detections[0]
-            labels = detections[1]
-            scores = detections[2]
 
+        if detections:
+            boxes, labels, scores = detections
             for label, score, box in zip(labels, scores, boxes):
                 if score >= threshold:
                     xtl = max(int(box[0]), 0)
@@ -146,11 +143,13 @@ class ModelHandler:
                     xbr = min(int(box[2]), w)
                     ybr = min(int(box[3]), h)
 
-                    results.append({
-                        "confidence": str(score),
+                    result = {
+                        "confidence": float(score),
                         "label": self.labels.get(label, "unknown"),
                         "points": [xtl, ytl, xbr, ybr],
                         "type": "rectangle",
-                    })
+                        "attributes": attributes if attributes else {}
+                    }
+                    results.append(result)
 
         return results

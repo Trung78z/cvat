@@ -50,7 +50,7 @@ spec:
         - kind: WORKDIR
           value: /opt/nuclio
         - kind: RUN
-          value: pip install gdown && gdown https://drive.google.com/uc?id=1-8VEJM6sOw5Nf4TqMJ9INDzbKi4fpZ_l
+          value: pip install gdown && gdown https://drive.google.com/uc?id=13fXvaZ1pcqB94teseqSbQAfegxzx0uEi
         - kind: RUN
           value: ln -s /usr/bin/python3 /usr/bin/python
 
